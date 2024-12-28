@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent any  // This allows Jenkins to run the pipeline on any available agent
 
     environment {
         SONAR_SCANNER = tool name: 'sonarqube', type: 'ToolType'  // Ensure this matches the configured SonarQube Scanner in Jenkins
@@ -63,9 +63,7 @@ pipeline {
     post {
         always {
             // Clean workspace after build
-            node {
-                cleanWs()
-            }
+            cleanWs()
         }
     }
 }
