@@ -1,16 +1,14 @@
 pipeline {
-    agent none  // This means the pipeline itself doesn't allocate a global agent
+    agent any  // This means the pipeline will use any available agent
 
     stages {
         stage('Checkout') {
-            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
             }
         }
 
         stage('Install Dependencies') {
-            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 script {
                     sh 'pip install -r requirements.txt'
@@ -19,7 +17,6 @@ pipeline {
         }
 
         stage('Run Unit Tests and Collect Coverage') {
-            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 script {
                     sh '''
@@ -32,22 +29,20 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 script {
                     bat """
-                    ${SONAR_SCANNER} -D"sonar.projectKey=${SONAR_PROJECT_KEY}" \
-                    -D"sonar.sources=." \
-                    -D"sonar.host.url=${SONAR_HOST_URL}" \
-                    -D"sonar.token=${SONAR_TOKEN}" \
-                    -D"sonar.python.coverage.reportPaths=coverage_report/coverage.xml"
+                    sonar-scanner -Dsonar.projectKey=coveragepipeline ^
+                    -Dsonar.sources=. ^
+                    -Dsonar.host.url=http://localhost:9000 ^
+                    -Dsonar.token=sqp_93f9cde8ec0e595ce01645c05b71b5d008836293 ^
+                    -Dsonar.python.coverage.reportPaths=coverage_report/coverage.xml
                     """
                 }
             }
         }
 
         stage('Publish Test Results') {
-            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 junit '**/test-*.xml'
             }
@@ -56,9 +51,7 @@ pipeline {
 
     post {
         always {
-            node('master') {  // Use the same node label here
-                cleanWs()
-            }
+            cleanWs()  // Clean workspace after the build
         }
     }
 }
