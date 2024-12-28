@@ -12,7 +12,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm  // Checkout the code from GitHub
+                // Explicitly specifying the GitHub repository URL
+                git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
             }
         }
 
@@ -62,8 +63,10 @@ pipeline {
 
     post {
         always {
-            // Clean workspace after build
-            cleanWs()
+            // Ensure `cleanWs` runs within the `node` block
+            node {
+                cleanWs()
+            }
         }
     }
 }
