@@ -1,24 +1,16 @@
 pipeline {
-    agent none  // Define that we do not want to allocate an agent globally for the whole pipeline
-
-    environment {
-        SONAR_SCANNER = tool name: 'SonarQube Scanner', type: 'ToolType'
-        SONAR_HOST_URL = 'http://localhost:9000'
-        SONAR_PROJECT_KEY = 'coveragepipeline'
-        SONAR_TOKEN = 'sqp_93f9cde8ec0e595ce01645c05b71b5d008836293'
-        PYTHON_PATH = 'C:/Users/akash/AppData/Local/Programs/Python/Python313/'
-    }
+    agent none  // This means the pipeline itself doesn't allocate a global agent
 
     stages {
         stage('Checkout') {
-            agent { label 'your-agent-label' }  // Specify the label of the agent to use
+            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
             }
         }
 
         stage('Install Dependencies') {
-            agent { label 'your-agent-label' }  // Specify the label of the agent to use
+            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 script {
                     sh 'pip install -r requirements.txt'
@@ -27,7 +19,7 @@ pipeline {
         }
 
         stage('Run Unit Tests and Collect Coverage') {
-            agent { label 'your-agent-label' }  // Specify the label of the agent to use
+            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 script {
                     sh '''
@@ -40,7 +32,7 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            agent { label 'your-agent-label' }  // Specify the label of the agent to use
+            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 script {
                     bat """
@@ -55,7 +47,7 @@ pipeline {
         }
 
         stage('Publish Test Results') {
-            agent { label 'your-agent-label' }  // Specify the label of the agent to use
+            agent { label 'master' }  // Specify which node/agent to use here
             steps {
                 junit '**/test-*.xml'
             }
@@ -64,7 +56,7 @@ pipeline {
 
     post {
         always {
-            node {
+            node('master') {  // Use the same node label here
                 cleanWs()
             }
         }
