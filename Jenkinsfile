@@ -1,8 +1,8 @@
 pipeline {
-    agent none  // This allows you to specify the node in individual stages
+    agent none  // Define that we do not want to allocate an agent globally for the whole pipeline
 
     environment {
-        SONAR_SCANNER = tool name: 'sonarqube', type: 'ToolType'
+        SONAR_SCANNER = tool name: 'SonarQube Scanner', type: 'ToolType'
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_PROJECT_KEY = 'coveragepipeline'
         SONAR_TOKEN = 'sqp_93f9cde8ec0e595ce01645c05b71b5d008836293'
