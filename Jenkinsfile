@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        SONAR_SCANNER = tool name: 'Sonarqube', type: 'ToolType'  // Ensure this matches the configured SonarQube Scanner in Jenkins
+        SONAR_SCANNER = tool name: 'sonarqube', type: 'ToolType'  // Ensure this matches the configured SonarQube Scanner in Jenkins
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_PROJECT_KEY = 'coveragepipeline'
         SONAR_TOKEN = 'sqp_93f9cde8ec0e595ce01645c05b71b5d008836293'  // Your SonarQube token
-        PYTHON_PATH = '/usr/bin/python3'  // Ensure this points to your Python installation (if using Python)
+        PYTHON_PATH = 'C:\Users\akash\AppData\Local\Programs\Python\Python313\'  // Ensure this points to your Python installation (if using Python)
     }
 
     stages {
