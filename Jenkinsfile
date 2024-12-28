@@ -50,6 +50,7 @@ pipeline {
 
     post {
         always {
+            // Ensure this is inside the node block
             cleanWs()  // Clean workspace after build
         }
     }
