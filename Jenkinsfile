@@ -1,74 +1,63 @@
 pipeline {
-    agent any
-
-    environment {
-        // Define environment variables if needed
-        COVERAGE_TOOL = 'JaCoCo' // Example coverage tool
-    }
+    agent any  // This means the pipeline will use any available agent
 
     stages {
+        // Checkout the code from the repository
         stage('Checkout') {
             steps {
-                // Checkout code from your repository
-                checkout scm
+                git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
             }
         }
-        
-        stage('Build') {
+
+        // Install the project dependencies
+        stage('Install Dependencies') {
             steps {
                 script {
-                    // Example build step
-                    sh 'mvn clean install'
+                    sh 'pip install -r requirements.txt'
                 }
             }
         }
 
-        stage('Run Tests') {
+        // Run unit tests and collect coverage data
+        stage('Run Unit Tests and Collect Coverage') {
             steps {
                 script {
-                    // Example test step
-                    sh 'mvn test'
+                    sh '''
+                    coverage run -m unittest discover -s tests -p "test_*.py"
+                    coverage report
+                    coverage html -d coverage_report
+                    '''
                 }
             }
         }
-        
-        stage('Generate Code Coverage') {
+
+        // Perform SonarQube analysis
+        stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Example JaCoCo code coverage generation step
-                    sh 'mvn jacoco:report'
+                    bat """
+                    sonar-scanner -Dsonar.projectKey=coveragepipeline ^ 
+                    -Dsonar.sources=. ^
+                    -Dsonar.host.url=http://localhost:9000 ^
+                    -Dsonar.token=sqp_93f9cde8ec0e595ce01645c05b71b5d008836293 ^
+                    -Dsonar.python.coverage.reportPaths=coverage_report/coverage.xml ^
+                    """
                 }
             }
         }
-        
-        stage('Publish Coverage Results') {
+
+        // Publish test results
+        stage('Publish Test Results') {
             steps {
-                script {
-                    // Example coverage reporting step
-                    junit '**/target/test-*.xml' // Publish test results
-                    jacoco(execPattern: '**/target/jacoco.exec', 
-                           classPattern: '**/target/classes', 
-                           sourcePattern: '**/src/main/java')
-                }
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                script {
-                    // Example deploy step
-                    sh 'mvn deploy'
-                }
+                junit '**/test-*.xml'  // Adjust the path if necessary for your test results
             }
         }
     }
 
+    // Post actions
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Please check the logs.'
+        always {
+            cleanWs()  // Clean workspace after the build
         }
     }
 }
