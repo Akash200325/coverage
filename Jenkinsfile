@@ -2,18 +2,17 @@ pipeline {
     agent none  // This allows you to specify the node in individual stages
 
     environment {
-        SONAR_SCANNER = tool name: 'sonarqube', type: 'ToolType'  // Ensure this matches the configured SonarQube Scanner in Jenkins
+        SONAR_SCANNER = tool name: 'sonarqube', type: 'ToolType'
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_PROJECT_KEY = 'coveragepipeline'
-        SONAR_TOKEN = 'sqp_93f9cde8ec0e595ce01645c05b71b5d008836293'  // Your SonarQube token
-        PYTHON_PATH = 'C:/Users/akash/AppData/Local/Programs/Python/Python313/'  // Use forward slashes or double backslashes
+        SONAR_TOKEN = 'sqp_93f9cde8ec0e595ce01645c05b71b5d008836293'
+        PYTHON_PATH = 'C:/Users/akash/AppData/Local/Programs/Python/Python313/'
     }
 
     stages {
         stage('Checkout') {
             agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
-                // Explicitly specifying the GitHub repository URL
                 git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
             }
         }
@@ -22,7 +21,6 @@ pipeline {
             agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 script {
-                    // Install required dependencies (assuming requirements.txt exists for Python)
                     sh 'pip install -r requirements.txt'
                 }
             }
@@ -32,11 +30,10 @@ pipeline {
             agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 script {
-                    // Run unit tests and collect coverage
                     sh '''
-                    coverage run -m unittest discover -s tests -p "test_*.py"  # Adjust if your test directory or pattern differs
-                    coverage report  # Display coverage summary in console
-                    coverage html -d coverage_report  # Generate HTML coverage report
+                    coverage run -m unittest discover -s tests -p "test_*.py"
+                    coverage report
+                    coverage html -d coverage_report
                     '''
                 }
             }
@@ -46,7 +43,6 @@ pipeline {
             agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 script {
-                    // Run SonarQube analysis using the scanner
                     bat """
                     ${SONAR_SCANNER} -D"sonar.projectKey=${SONAR_PROJECT_KEY}" \
                     -D"sonar.sources=." \
@@ -61,7 +57,7 @@ pipeline {
         stage('Publish Test Results') {
             agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
-                junit '**/test-*.xml'  // Adjust based on your test result XML format
+                junit '**/test-*.xml'
             }
         }
     }
