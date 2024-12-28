@@ -1,5 +1,5 @@
 pipeline {
-    agent any  // This allows Jenkins to run the pipeline on any available agent
+    agent none  // This allows you to specify the node in individual stages
 
     environment {
         SONAR_SCANNER = tool name: 'sonarqube', type: 'ToolType'  // Ensure this matches the configured SonarQube Scanner in Jenkins
@@ -11,6 +11,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 // Explicitly specifying the GitHub repository URL
                 git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
@@ -18,6 +19,7 @@ pipeline {
         }
 
         stage('Install Dependencies') {
+            agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 script {
                     // Install required dependencies (assuming requirements.txt exists for Python)
@@ -27,6 +29,7 @@ pipeline {
         }
 
         stage('Run Unit Tests and Collect Coverage') {
+            agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 script {
                     // Run unit tests and collect coverage
@@ -40,6 +43,7 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 script {
                     // Run SonarQube analysis using the scanner
@@ -55,6 +59,7 @@ pipeline {
         }
 
         stage('Publish Test Results') {
+            agent { label 'your-agent-label' }  // Specify the label of the agent to use
             steps {
                 junit '**/test-*.xml'  // Adjust based on your test result XML format
             }
@@ -63,7 +68,6 @@ pipeline {
 
     post {
         always {
-            // Ensure `cleanWs` runs within the `node` block
             node {
                 cleanWs()
             }
