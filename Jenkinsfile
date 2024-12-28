@@ -1,57 +1,74 @@
 pipeline {
-    agent any  // This means the pipeline will use any available agent
+    agent any
+
+    environment {
+        // Define environment variables if needed
+        COVERAGE_TOOL = 'JaCoCo' // Example coverage tool
+    }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
+                // Checkout code from your repository
+                checkout scm
             }
         }
-
-        stage('Install Dependencies') {
+        
+        stage('Build') {
             steps {
                 script {
-                    sh 'pip install -r requirements.txt'
+                    // Example build step
+                    sh 'mvn clean install'
                 }
             }
         }
 
-        stage('Run Unit Tests and Collect Coverage') {
+        stage('Run Tests') {
             steps {
                 script {
-                    sh '''
-                    coverage run -m unittest discover -s tests -p "test_*.py"
-                    coverage report
-                    coverage html -d coverage_report
-                    '''
+                    // Example test step
+                    sh 'mvn test'
                 }
             }
         }
-
-        stage('SonarQube Analysis') {
+        
+        stage('Generate Code Coverage') {
             steps {
                 script {
-                    bat """
-                    sonar-scanner -Dsonar.projectKey=coveragepipeline ^
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.token=sqp_93f9cde8ec0e595ce01645c05b71b5d008836293 ^
-                    -Dsonar.python.coverage.reportPaths=coverage_report/coverage.xml
-                    """
+                    // Example JaCoCo code coverage generation step
+                    sh 'mvn jacoco:report'
                 }
             }
         }
-
-        stage('Publish Test Results') {
+        
+        stage('Publish Coverage Results') {
             steps {
-                junit '**/test-*.xml'
+                script {
+                    // Example coverage reporting step
+                    junit '**/target/test-*.xml' // Publish test results
+                    jacoco(execPattern: '**/target/jacoco.exec', 
+                           classPattern: '**/target/classes', 
+                           sourcePattern: '**/src/main/java')
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    // Example deploy step
+                    sh 'mvn deploy'
+                }
             }
         }
     }
 
     post {
-        always {
-            cleanWs()  // Clean workspace after the build
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }
