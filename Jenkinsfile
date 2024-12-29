@@ -24,8 +24,8 @@ pipeline {
                 bat '''
                 set PATH=%PYTHON_PATH%;%PATH%
                 echo "Running tests with coverage..."
-                coverage run --source=. test_unit.py
-                coverage xml -o coverage.xml
+                coverage run --source=. test_myapp.py || exit /b 1
+                coverage xml -o coverage.xml || exit /b 1
                 if exist coverage.xml (
                     echo "Coverage report generated successfully."
                 ) else (
@@ -53,11 +53,11 @@ pipeline {
             steps {
                 bat '''
                 set PATH=%PYTHON_PATH%;%PATH%
-                sonar-scanner -Dsonar.projectKey=codecovrage ^
-                              -Dsonar.sources=. ^ 
+                sonar-scanner -Dsonar.projectKey=codecoverage ^
+                              -Dsonar.sources=. ^
                               -Dsonar.python.coverage.reportPaths=coverage.xml ^
                               -Dsonar.host.url=http://localhost:9000 ^
-                              -Dsonar.token=%SONAR_TOKEN%  
+                              -Dsonar.token=%SONAR_TOKEN%
                 '''
             }
         }
