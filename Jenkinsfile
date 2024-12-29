@@ -1,63 +1,76 @@
 pipeline {
-    agent any  // This means the pipeline will use any available agent
-
+    agent any
+    environment {
+        PYTHON_PATH = 'C:\\Users\\akash\\AppData\\Local\\Programs\\Python\\Python313;C:\\Users\\akash\\AppData\\Local\\Programs\\Python\\Python313\\Scripts'
+    }
     stages {
-        // Checkout the code from the repository
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Akash200325/coverage.git'
+                checkout scm
             }
         }
 
-        // Install the project dependencies
-        stage('Install Dependencies') {
+        stage('Verify Coverage Installation') {
             steps {
-                script {
-                    sh 'pip install -r requirements.txt'
-                }
+                bat '''
+                set PATH=%PYTHON_PATH%;%PATH%
+                pip show coverage
+                '''
             }
         }
 
-        // Run unit tests and collect coverage data
-        stage('Run Unit Tests and Collect Coverage') {
+        stage('Run Unit Tests and Generate Coverage') {
             steps {
-                script {
-                    sh '''
-                    coverage run -m unittest discover -s tests -p "test_*.py"
-                    coverage report
-                    coverage html -d coverage_report
-                    '''
-                }
+                bat '''
+                set PATH=%PYTHON_PATH%;%PATH%
+                echo "Running tests with coverage..."
+                coverage run --source=. test_unit.py
+                coverage xml -o coverage.xml
+                if exist coverage.xml (
+                    echo "Coverage report generated successfully."
+                ) else (
+                    echo "Error: Coverage report not found!"
+                    exit /b 1
+                )
+                '''
             }
         }
 
-        // Perform SonarQube analysis
+        stage('Ensure Correct Working Directory') {
+            steps {
+                bat '''
+                set PATH=%PYTHON_PATH%;%PATH%
+                echo "Current working directory: %cd%"
+                dir
+                '''
+            }
+        }
+
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    bat """
-                    sonar-scanner -Dsonar.projectKey=coveragepipeline ^ 
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.token=sqp_93f9cde8ec0e595ce01645c05b71b5d008836293 ^
-                    -Dsonar.python.coverage.reportPaths=coverage_report/coverage.xml ^
-                    """
-                }
+            environment {
+                SONAR_TOKEN = credentials('sonarqube') // Accessing the SonarQube token stored in Jenkins credentials
             }
-        }
-
-        // Publish test results
-        stage('Publish Test Results') {
             steps {
-                junit '**/test-*.xml'  // Adjust the path if necessary for your test results
+                bat '''
+                set PATH=%PYTHON_PATH%;%PATH%
+                sonar-scanner -Dsonar.projectKey=codecovrage ^
+                              -Dsonar.sources=. ^ 
+                              -Dsonar.python.coverage.reportPaths=coverage.xml ^
+                              -Dsonar.host.url=http://localhost:9000 ^
+                              -Dsonar.token=%SONAR_TOKEN%  
+                '''
             }
         }
     }
-
-    // Post actions
     post {
+        success {
+            echo 'Pipeline completed successfully'
+        }
+        failure {
+            echo 'Pipeline failed'
+        }
         always {
-            cleanWs()  // Clean workspace after the build
+            echo 'This runs regardless of the result.'
         }
     }
 }
