@@ -53,11 +53,11 @@ pipeline {
             steps {
                 bat '''
                 set PATH=%PYTHON_PATH%;%PATH%
-                sonar-scanner -Dsonar.projectKey=codecoverage ^
-                              -Dsonar.sources=. ^
-                              -Dsonar.python.coverage.reportPaths=coverage.xml ^
-                              -Dsonar.host.url=http://localhost:9000 ^
-                              -Dsonar.token=%SONAR_TOKEN%
+                sonar-scanner -Dsonar.projectKey=codecovrage ^
+                                            -Dsonar.sources=. ^
+                                            -Dsonar.python.coverage.reportPaths=coverage.xml ^
+                                            -Dsonar.host.url=http://localhost:9000 ^
+                                            -Dsonar.token=sqp_72ba8a32d8594b138f3a92569a947cca664e9805               
                 '''
             }
         }
